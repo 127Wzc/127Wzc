@@ -1,0 +1,46 @@
+name: Waka Readme
+
+on:
+  schedule:
+    - cron: "0 0 * * *"   # 每天 00:00 UTC 更新一次（北京时间 08:00）
+  workflow_dispatch:
+
+jobs:
+  update-readme:
+    name: Update Readme with Metrics
+    runs-on: ubuntu-latest
+    steps:
+      - uses: anmol098/waka-readme-stats@master
+        with:
+          WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+          # ---- 显示内容 ----
+          LOCALE: "zh"
+          SHOW_OS: "True"
+          SHOW_PROJECTS: "True"
+          SHOW_EDITORS: "True"
+          SHOW_LANGUAGE: "True"
+          SHOW_LANGUAGE_PER_REPO: "True"
+          SHOW_DAYS_OF_WEEK: "True"
+          SHOW_COMMIT: "True"
+          SHOW_SHORT_INFO: "True"
+          SHOW_UPDATED_DATE: "True"
+          SHOW_LOC_CHART: "True"
+          SHOW_TOTAL_CODE_TIME: "True"
+          SHOW_LINES_OF_CODE: "True"
+          SHOW_PROFILE_VIEWS: "True"
+
+          # ---- 个性化 ----
+          COMMIT_USERNAME: "127Wzc"
+          COMMIT_EMAIL: "127Wzc@users.noreply.github.com"
+          COMMIT_MESSAGE: "chore: update wakatime stats 🐻"
+          # 时区/语言徽章配色（跟着主页主题走）
+          SHOW_TIMEZONE: "True"
+          SYMBOL_VERSION: "3"
+
+          # 进度条配色（小埋橙）
+          BAR_COLOR: "#FF8F72"
+          BAR_TRACK_COLOR: "#FFEDE4"
+          BAR_STYLE: "block"
+          BADGE_STYLE: "flat"

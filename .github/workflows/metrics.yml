@@ -1,0 +1,69 @@
+name: Metrics
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # 每天 06:00 UTC
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  github-metrics:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # 没有配 METRICS_TOKEN 就静默跳过，避免每天在 Actions 里挂一个红叉
+      - name: Check METRICS_TOKEN
+        id: token
+        env:
+          TOKEN: ${{ secrets.METRICS_TOKEN }}
+        run: |
+          if [ -n "$TOKEN" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::METRICS_TOKEN 未配置，跳过 metrics 生成"
+          fi
+
+      - uses: lowlighter/metrics@latest
+        if: steps.token.outputs.present == 'true'
+        with:
+          token: ${{ secrets.METRICS_TOKEN }}   # 需要一个带 repo + read:user 的 PAT
+          user: 127Wzc
+          filename: assets/metrics.svg
+          template: classic
+          base: header, activity, community, repositories, metadata
+          config_timezone: Asia/Shanghai
+          config_display: large
+          config_theme: github
+
+          # 等距日历（一年的贡献热力图）
+          plugin_isocalendar: yes
+          plugin_isocalendar_duration: full-year
+
+          # 语言占比
+          plugin_languages: yes
+          plugin_languages_analysis_timeout: 15
+          plugin_languages_categories: markup, programming
+          plugin_languages_colors: github
+          plugin_languages_limit: 8
+          plugin_languages_sections: most-used
+          plugin_languages_threshold: 0%
+
+          # 习惯分析
+          plugin_habits: yes
+          plugin_habits_from: 200
+          plugin_habits_days: 14
+          plugin_habits_facts: yes
+          plugin_habits_charts: yes
+
+          # 成就徽章
+          plugin_achievements: yes
+          plugin_achievements_threshold: B
+          plugin_achievements_secrets: yes
+          plugin_achievements_display: detailed
+
+          # 代码行数
+          plugin_lines: yes
