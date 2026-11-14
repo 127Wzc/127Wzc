@@ -1,19 +1,48 @@
 name: Waka Readme
 
+# 说明：这个 workflow 用 anmol098/waka-readme-stats 把 WakaTime 的编码统计
+# 写进 README 的 <!--START_SECTION:waka--> ... <!--END_SECTION:waka--> 之间。
+# 它唯一的硬性依赖是 secrets.WAKATIME_API_KEY（https://wakatime.com/settings/api-key）。
+# 没配就静默跳过，不会每天在 Actions 里挂红叉。
+
 on:
   schedule:
-    - cron: "0 0 * * *"   # 每天 00:00 UTC 更新一次（北京时间 08:00）
+    - cron: "0 3 1 * *"   # 每月 1 日 03:00 UTC（北京时间 11:00）跑一次，统计类数据不需要天天刷
   workflow_dispatch:
+
+concurrency:
+  group: waka-readme
+  cancel-in-progress: false
 
 jobs:
   update-readme:
     name: Update Readme with Metrics
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
     steps:
+      # 先探一次密钥：没有 WAKATIME_API_KEY 就直接跳过，避免 KeyError 红叉
+      - name: Check WAKATIME_API_KEY
+        id: key
+        env:
+          WAKA_KEY: ${{ secrets.WAKATIME_API_KEY }}
+        run: |
+          if [ -n "$WAKA_KEY" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::WAKATIME_API_KEY 未配置，跳过 WakaTime 统计更新（README 保持不变）"
+          fi
+
       - uses: anmol098/waka-readme-stats@master
+        if: steps.key.outputs.ready == 'true'
         with:
+          # GH_TOKEN 没单独配 PAT 时退回仓库自带的 GITHUB_TOKEN（job 已给 contents: write）
           WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+          PUSH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
 
           # ---- 显示内容 ----
           LOCALE: "zh"
@@ -30,6 +59,8 @@ jobs:
           SHOW_TOTAL_CODE_TIME: "True"
           SHOW_LINES_OF_CODE: "True"
           SHOW_PROFILE_VIEWS: "True"
+          SHOW_AI_CODING: "False"
+          SHOW_AI_CODE_TIME: "False"
 
           # ---- 个性化 ----
           COMMIT_USERNAME: "127Wzc"

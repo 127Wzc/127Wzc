@@ -96,7 +96,9 @@ const cc = {
 </div>
 
 <!-- WakaTime 还没配（没装插件 / 没加 secret），这里先不显示空标题。
-     配好后删掉下面这段注释，START/END 两个标记不要动，Action 靠它们定位。
+     配置方法：仓库 Settings → Secrets → Actions 里加 WAKATIME_API_KEY
+     （https://wakatime.com/settings/api-key），然后删掉下面这段注释即可；
+     .github/workflows/waka.yml 每月 1 日自动填充一次，START/END 两个标记不要动。
 
 ### Coding Stats · WakaTime
 -->
